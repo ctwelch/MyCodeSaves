@@ -1,0 +1,339 @@
+﻿<Window x:Class="BasicBridge.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:BasicBridge.Converters"
+        xmlns:local="clr-namespace:BasicBridge"
+        mc:Ignorable="d"
+        Title="Perfect Practice ToDo Helper" 
+        Height="Auto" Width="Auto"
+        WindowStartupLocation="CenterScreen">
+    <Grid x:Name="ToDoViewer">
+        <Grid.Resources>
+            <converters:EfileConfInputToVisibilityConverter x:Key="EfileConfInputVis"/>
+            <converters:EfileConfInputToBooleanConverter x:Key="EfileConfInputToBool"/>
+            <Style x:Key="WrapText"
+                   TargetType="{x:Type TextBlock}">
+                <Setter Property="TextWrapping" Value="Wrap"/>
+            </Style>
+
+            <SolidColorBrush x:Key="RedBrush" Color="Red" Opacity="0.6"/>
+            <SolidColorBrush x:Key="GreenBrush" Color="Green" Opacity="0.6"/>
+            <SolidColorBrush x:Key="OrangeBrush" Color="Orange" Opacity="0.6"/>
+            <SolidColorBrush x:Key="BlueBrush" Color="Blue" Opacity="0.6"/>
+            
+            <Style x:Key="PriorityHighlighting" TargetType="{x:Type DataGridRow}">                
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Priority}" Value="4">                        
+                        <Setter Property="Background" Value="{StaticResource RedBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="3">
+                        <Setter Property="Background" Value="{StaticResource OrangeBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="2">
+                        <Setter Property="Background" Value="{StaticResource BlueBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="1">
+                        <Setter Property="Background" Value="{StaticResource GreenBrush}"/>
+                    </DataTrigger>
+
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Height" Value="Auto"/>
+                    </Trigger>
+
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="SelectionHighlighting" TargetType="{x:Type DataGridCell}">
+                <Setter Property="Foreground" Value="Black"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{x:Null}"/>
+                        <Setter Property="BorderThickness" Value="1.25"/>
+                        <Setter Property="BorderBrush" Value="LawnGreen"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="14"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="HeaderFormatting" TargetType="{x:Type DataGridColumnHeader}">
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            </Style>
+
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="125"/>
+            </Grid.ColumnDefinitions>
+            <DataGrid x:Name="ToDoGrid"
+                Grid.Column="0"
+                ItemsSource="{Binding ToDos}"
+                SelectedItem="{Binding SelectedToDo}"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                SelectionMode="Single"
+                ColumnWidth="Auto"            
+                Width="Auto"
+                Height="Auto"
+                RowStyle="{StaticResource PriorityHighlighting}"
+                CellStyle="{StaticResource SelectionHighlighting}"
+                ColumnHeaderStyle="{StaticResource HeaderFormatting}" 
+                LostFocus="ToDoGrid_LostFocus">
+                <DataGrid.Columns>
+                    <DataGridTextColumn 
+                        Width="Auto"
+                        Header="File Number"                
+                        Binding="{Binding Path=EntityId}"
+                        SortMemberPath="EntityId"
+                        IsReadOnly="True"/>
+                    <DataGridTextColumn 
+                        Width="Auto"
+                        Header="Assigned To"                
+                        Binding="{Binding Path=AssignedTo}"
+                        SortMemberPath="AssignedTo"
+                        IsReadOnly="True"/>
+                    <DataGridTextColumn 
+                        Width="Auto"
+                        Header="Date"
+                        Binding="{Binding Path=StartDtAct, StringFormat=d}"
+                        SortMemberPath="StartDtAct"
+                        IsReadOnly="True"/>
+                    <DataGridTextColumn 
+                        Width="Auto"
+                        Header="Time"
+                        Binding="{Binding Path=StartTmAct, StringFormat=d}"
+                        SortMemberPath="StartTmAct"
+                        IsReadOnly="True"/>
+                    <!--<DataGridTextColumn 
+                        Width="Auto"
+                        Header="ToDo Text"
+                        Binding="{Binding Path=TranText}"
+                        SortMemberPath="TranText"
+                        IsReadOnly="True"/>-->
+                    <DataGridTemplateColumn Header="ToDo Text"
+                                            SortMemberPath="TranText"
+                                            IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBox Text="{Binding TranTextAlias}"/>
+                                    <ListBox x:Name="ViewFileLocations"
+                                             ItemsSource="{Binding ScanItems}" 
+                                             DisplayMemberPath="DocLocAlias"
+                                             SelectedValuePath="DocLoc"
+                                             SelectedValue="{Binding DataContext.SelectedViewFileLocation, ElementName=ToDoViewer}"
+                                             Tag="{Binding ElementName=ToDoViewer, Path=DataContext}">
+                                        <ListBox.Resources>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Yellow"/>                                            
+                                        </ListBox.Resources>
+                                        <ListBox.ContextMenu>
+                                            <ContextMenu x:Name="TheContextMenu"
+                                                         DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
+                                                         ItemsSource="{Binding ContextMenuActions}">
+                                                <ContextMenu.ItemTemplate>
+                                                    <DataTemplate DataType="MenuItem">
+                                                        <MenuItem Header="{Binding Header}" Command="{Binding ContextMenuAction}"/>
+                                                    </DataTemplate>
+                                                </ContextMenu.ItemTemplate>
+                                            </ContextMenu>
+                                        </ListBox.ContextMenu>
+                                        <ListBox.InputBindings>
+                                            <KeyBinding Key="Enter"
+                                                        Command="{Binding DataContext.OpenDocFromViewFilesCommand, ElementName=ToDoViewer}"/>
+                                        </ListBox.InputBindings>
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="{x:Type ListBoxItem}">
+                                                <EventSetter Event="MouseDoubleClick" Handler="ViewFileLocations_MouseDoubleClickHandler"/>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </StackPanel>                                
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn 
+                        Width="Auto"
+                        Header="ToDo Code"
+                        Binding="{Binding Path=ActCode}"
+                        SortMemberPath="ActCode"
+                        IsReadOnly="True"/>
+                    <DataGridTextColumn 
+                        Width="Auto"
+                        Header="County"
+                        Binding="{Binding Path=LocCode}"
+                        SortMemberPath="LocCode"
+                        IsReadOnly="True"/>
+                    <DataGridTextColumn 
+                        Width="*"
+                        Header="Priority"
+                        Binding="{Binding Path=Priority}"
+                        SortMemberPath="Priority"
+                        IsReadOnly="True"/>
+                    <DataGridTextColumn 
+                        Width="*"
+                        Header="The Status"
+                        Binding="{Binding Path=TheStatus}"
+                        SortMemberPath="TheStatus"
+                        IsReadOnly="True"/>
+                    <!--<DataGridTemplateColumn 
+                        Width="110"
+                        Header="">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Command="{Binding ElementName=ToDoViewer, Path=DataContext.MarkToDoCompleteCommand}"
+                                    CommandParameter="{Binding ElementName=IsEfileConfNumber, Path=IsChecked}">
+                                    Mark Complete</Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>-->
+                </DataGrid.Columns>
+                <DataGrid.RowDetailsTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="1" BorderBrush="Black">
+                            <ItemsControl x:Name="UserInputValue"
+                            Width="Auto" Height="Auto"
+                            ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                            AncestorType={x:Type Window}}, 
+                                            Path=DataContext.UserInputs}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Label x:Name="UserInputLabel"
+                                                    Content="{Binding InputLabel}" 
+                                                    FontSize="14"
+                                                    FontWeight="Bold"/>
+                                            <StackPanel>
+                                                <TextBox Text="{Binding InputValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                         Width="175" Height="25"/>
+                                                <!--<CheckBox x:Name="IsEfileConfNumber"
+                                                IsChecked="{Binding ElementName=UserInputLabel, Path=Content, Converter={StaticResource EfileConfInputToBool}}"                                             
+                                                Content="Is Efile Confirmation Number"
+                                                Visibility="{Binding ElementName=UserInputLabel, Path=Content, Converter={StaticResource EfileConfInputVis}}"/>-->
+                                            </StackPanel>
+                                            <Label Content="Action Number:"
+                                                   HorizontalAlignment="Right"/>
+                                            <Label Content="{Binding ElementName=ToDoGrid, Path=SelectedItem.ActionGroup}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </DataTemplate>
+                </DataGrid.RowDetailsTemplate>
+            </DataGrid>
+            <Border Grid.Column="1"
+                    BorderBrush="Black"
+                    BorderThickness="1">
+                <StackPanel >
+                    <Label  BorderThickness="1" 
+                            BorderBrush="Black" 
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Width="125"
+                            HorizontalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            Content="Control Panel"/>
+                    <Label  Content="Filter Selector:"                        
+                            Margin="0,5,0,0"/>
+                    <ComboBox   Text="Select ToDo Filter"
+                                IsEditable="True"
+                                IsReadOnly="True"
+                                Margin="0,0,0,10"
+                                ItemsSource="{Binding ToDoFilters}"
+                                SelectedValue="{Binding SelectedToDoFilter}"
+                                DisplayMemberPath="Key"
+                                SelectedValuePath="Value"/>
+                    <Button Content="Refresh"
+                            Command="{Binding RefreshToDoGridCommand}"/>
+                    <Button Height="40"
+                            Margin="5,15,5,5"
+                            Background="LightGreen"
+                	        Command="{Binding DataContext.MarkToDoCompleteCommand, ElementName=ToDoViewer}">
+                        <TextBlock><Run Text="   Complete"/><LineBreak/><Run Text="Selected ToDo"/></TextBlock>
+                    </Button>
+
+                    <Button Content="Add Note To File"
+                            Margin="5,12,5,5"
+                            FontWeight="DemiBold"
+                            Command="{Binding OpenAddNoteViewCommand}"/>
+
+                    <Button x:Name="ConfigureButton"
+                            Content="Configure ToDos"
+                            Margin="5,12,5,5"
+                            FontWeight="DemiBold"
+                            Command="{Binding OpenConfigView}"/>    
+                </StackPanel>
+            </Border>
+            
+        </Grid>
+
+        <DataGrid x:Name="Fields"
+                Grid.Column="0"
+                Grid.Row="2"                
+                ItemsSource="{Binding PpFields}"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                SelectionMode="Single"
+                HorizontalAlignment="Left"
+                MinHeight="300"
+                Width="250" 
+                ColumnHeaderStyle="{StaticResource HeaderFormatting}">
+            <DataGrid.Columns>
+                <DataGridTextColumn 
+                                Width="*"
+                                Header="Field"
+                                Binding="{Binding Path=LabelName}"
+                                SortMemberPath="LabelName"/>
+                <DataGridTextColumn 
+                                Width="*"
+                                Header="Value"
+                                Binding="{Binding Path=MemoText}"
+                                SortMemberPath="MemoText"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <DataGrid x:Name="Notes"
+            Grid.Column="1"
+            Grid.Row="2"                
+            ItemsSource="{Binding PpNotes}"
+            AutoGenerateColumns="False"
+            CanUserAddRows="False"
+            SelectionMode="Single"
+            Height="Auto"
+            Width="Auto"
+            ColumnHeaderStyle="{StaticResource HeaderFormatting}">
+            <DataGrid.Columns>
+                <DataGridTextColumn 
+                    Width="Auto"
+                    Header="Note Code"
+                    Binding="{Binding Path=ActCode}"
+                    SortMemberPath="ActCode"/>
+                <DataGridTextColumn 
+                    Width="Auto"
+                    Header="Note Date"
+                    Binding="{Binding Path=StartDtAct, StringFormat=d}"
+                    SortMemberPath="StartDtAct"/>
+                <DataGridTextColumn 
+                    Width="*"
+                    Header="Note Text"
+                    Binding="{Binding Path=TranText}"
+                    SortMemberPath="TranText"
+                    ElementStyle="{StaticResource WrapText}"/>              
+            </DataGrid.Columns>
+        </DataGrid>        
+    </Grid>
+</Window>

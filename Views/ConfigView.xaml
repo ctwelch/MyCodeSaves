@@ -1,0 +1,586 @@
+﻿<Window x:Class="BasicBridge.Views.ConfigView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BasicBridge.Views"
+        xmlns:converters="clr-namespace:BasicBridge.Converters"
+        xmlns:template="clr-namespace:BasicBridge.DataTemplates"
+        xmlns:l="clr-namespace:BasicBridge.Models"
+        mc:Ignorable="d"
+        Title="ConfigView" Height="450" Width="500"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        Loaded="Window_Loaded">
+    <Window.Resources>
+        <converters:SelectedItemsToEnabledConverter x:Key="SelectedItemsToEnabledConverter"/>
+        <converters:IdToVisibilityConverter x:Key="IdToVisibilityConverter"/>
+        <converters:InvertedIdToVisibilityConverter x:Key="InvertedIdToVisibilityConverter"/>
+        <converters:EfileConfInputToVisibilityConverter x:Key="EfileConfInputVis"/>
+        <ObjectDataProvider x:Key="ToDoProvider" ObjectType="{x:Type l:ToDo}"/>
+
+        <DataTemplate x:Key="ConstantTranTextTemplate">           
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="Constant Text: "
+                       Grid.Column="0" Grid.Row="0"/>
+                <TextBox        
+                    Text="{Binding ConstantText}"
+                    Width="175" Height="25"
+                    Grid.Column="1" Grid.Row="0"/>
+                <Button
+                    Grid.Column="2" Grid.Row="0"
+                    Visibility="{Binding Id, Converter={StaticResource InvertedIdToVisibilityConverter}}"
+                    Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                Path=DataContext.AddNewSegmentCommand}">Add Segment</Button>
+                <Button Grid.Column="2" Grid.Row="0"
+                    Visibility="{Binding Id, Converter={StaticResource IdToVisibilityConverter}}"
+                    Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                Path=DataContext.RemoveSegmentCommand}"
+                    CommandParameter="{Binding Id}">Remove</Button>
+            </Grid>            
+        </DataTemplate>
+
+        <DataTemplate x:Key="UserInputTranTextTemplate">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Variable Input: "/>
+                <StackPanel>
+                    <TextBox x:Name="UserInputLabel"      
+                        Text="{Binding InputLabel}"
+                        Width="175" Height="25"/>
+                    <!--<CheckBox 
+                        IsChecked="True"
+                        Content="Is the Efile Confirmation Number"
+                        Visibility="{Binding ElementName=UserInputLabel, Path=Text, Converter={StaticResource EfileConfInputVis}}"/>-->
+                </StackPanel>
+                
+                <Button
+                    Visibility="{Binding Id, Converter={StaticResource InvertedIdToVisibilityConverter}}"
+                    Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                Path=DataContext.AddNewSegmentCommand}">Add Segment</Button>
+                <Button
+                    Visibility="{Binding Id, Converter={StaticResource IdToVisibilityConverter}}"
+                    Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                Path=DataContext.RemoveSegmentCommand}"
+                    CommandParameter="{Binding Id}">Remove</Button>
+            </StackPanel>                    
+        </DataTemplate>
+
+        <DataTemplate x:Key="ToDoPropertyTranTextTemplate">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="ToDo Property: "/>
+                <ComboBox 
+                    Visibility="{Binding Id, Converter={StaticResource InvertedIdToVisibilityConverter}}"
+                    ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                    Path=DataContext.ToDoProperties}"
+                    DisplayMemberPath="Name"
+                    SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                    Path=DataContext.SelectedToDoProperty}"
+                    Width="175" Height="25">
+                </ComboBox>
+                <Button
+                    Visibility="{Binding Id, Converter={StaticResource InvertedIdToVisibilityConverter}}"
+                    Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                Path=DataContext.AddNewSegmentCommand}">Add Segment</Button>
+                <TextBox
+                    Visibility="{Binding Id, Converter={StaticResource IdToVisibilityConverter}}"
+                    HorizontalAlignment="Left"
+                    Text="{Binding ToDoPropertyName}"
+                    Width="175" Height="25"/>
+                <Button
+                    Visibility="{Binding Id, Converter={StaticResource IdToVisibilityConverter}}"
+                    Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, 
+                                Path=DataContext.RemoveSegmentCommand}"
+                    CommandParameter="{Binding Id}">Remove</Button>
+            </StackPanel>            
+        </DataTemplate>
+
+        <template:TranTextDataTemplateSelector x:Key="templateSelector"
+               ConstantTranTextTemplate="{StaticResource ConstantTranTextTemplate}"
+               UserInputTranTextTemplate="{StaticResource UserInputTranTextTemplate}"
+               ToDoPropertyTranTextTemplate="{StaticResource ToDoPropertyTranTextTemplate}" />
+
+    </Window.Resources>
+    <TabControl>
+        <TabItem>
+            <TabItem.Header>
+                <Label Content="Fields"/>
+            </TabItem.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="For ToDo: "
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    HorizontalAlignment="Right"/>
+                <ComboBox x:Name="ToDoPicker1"
+                    Grid.ColumnSpan="2"
+                    Grid.Column="1" Grid.Row="0"
+                    Width="150"
+                    ItemsSource="{Binding DistinctToDos}"
+                    SelectedItem="{Binding SelectedToDo}"
+                    DisplayMemberPath="ActCode"/>
+                <Label Content="From Questionnaire: "
+                    Grid.Column="0"
+                    Grid.Row="1"
+                    HorizontalAlignment="Right"/>
+                <ComboBox x:Name="QuestionnairePicker"
+                    Grid.ColumnSpan="2"
+                    Grid.Column="1"
+                    Grid.Row="1"
+                    Width="150"
+                    ItemsSource="{Binding QuestionnaireNames}"
+                    SelectedItem="{Binding SelectedQuestionnaire}"
+                    DisplayMemberPath="Qlabel"></ComboBox>
+                <StackPanel Grid.Row="2" Grid.Column="0">
+                    <TextBlock Text="Fields to Show" 
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+                    <ListBox x:Name="FieldsToShow"                      
+	                    HorizontalAlignment="Center" 
+	                    VerticalAlignment="Center"
+	                    Height="145" 
+	                    Width="175"
+                        ItemsSource="{Binding UserFieldSettings}"
+                        DisplayMemberPath="LabelName">
+                        <ListBox.InputBindings>
+                            <KeyBinding 
+                                Key="Enter" 
+                                Command="{Binding RemoveToDoUserFieldSettingCommand}"
+                                CommandParameter="{Binding ElementName=FieldsToShow, Path=SelectedItem}">
+                            </KeyBinding>
+                            <!--<MouseBinding  
+                                Gesture="LeftDoubleClick" 
+                                Command="{Binding RemoveToDoUserFieldSettingCommand}"
+                                CommandParameter="{Binding ElementName=FieldsToShow, Path=SelectedItem}"/>-->
+                        </ListBox.InputBindings>
+                    </ListBox>
+                </StackPanel>
+                <Button x:Name="AddFieldButton"
+                    Content="Add" Grid.Row="2" Grid.Column="1" 
+		            IsEnabled="{Binding SelectedField, Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		            HorizontalAlignment="Left" 
+		            Height="25" 
+		            Width="64"
+		            Margin="0,0,0,50"
+		            Command="{Binding AddToDoUserFieldSettingCommand}"
+		            CommandParameter="{Binding ElementName=AvailableFields, Path=SelectedItem}"/>
+                <Button x:Name="RemoveFieldButton"
+                    Content="Remove" Grid.Row="2" Grid.Column="1"
+		            IsEnabled="{Binding ElementName=FieldsToShow, Path=SelectedItem, 
+					            Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		            HorizontalAlignment="Left" 
+		            Height="25" 
+		            Width="64"
+		            Margin="0,50,0,0"
+		            Command="{Binding RemoveToDoUserFieldSettingCommand}"
+		            CommandParameter="{Binding ElementName=FieldsToShow, Path=SelectedValue}"/>
+                <StackPanel Grid.Row="2" Grid.Column="2">
+                    <TextBlock 
+		                Text="Available Fields"
+		                FontSize="14"
+		                FontWeight="SemiBold"
+		                HorizontalAlignment="Left"
+		                VerticalAlignment="Center"                                 
+		                Margin="27,0,0,0"/>
+                    <ListBox x:Name="AvailableFields"            
+		                HorizontalAlignment="Left" 
+		                VerticalAlignment="Center"
+		                Height="145" 
+		                Width="175"
+		                Margin="2,0,0,0"
+                        ItemsSource="{Binding FieldsMetaData}"
+                        SelectedItem="{Binding SelectedField}"
+                        DisplayMemberPath="LabelName">
+                        <ListBox.InputBindings>
+                            <KeyBinding 
+                                Key="Enter" 
+                                Command="{Binding AddToDoUserFieldSettingCommand}"
+                                CommandParameter="{Binding ElementName=AvailableFields, Path=SelectedItem}">
+                            </KeyBinding>
+                            <!--<MouseBinding  
+                                Gesture="LeftDoubleClick" 
+                                Command="{Binding AddToDoUserFieldSettingCommand}"
+                                CommandParameter="{Binding ElementName=AvailableFields, Path=SelectedItem}"/>-->
+                        </ListBox.InputBindings>
+                    </ListBox>
+                </StackPanel>
+            </Grid>
+        </TabItem>
+        <TabItem>
+            <TabItem.Header>
+                <Label Content="Notes"/>
+            </TabItem.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="For ToDo: "
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    HorizontalAlignment="Right"/>
+                <ComboBox 
+                    Grid.ColumnSpan="2"
+                    Grid.Column="1"
+                    Grid.Row="0"
+                    Width="150"
+                    ItemsSource="{Binding DistinctToDos}"
+                    SelectedItem="{Binding SelectedToDo}"
+                    DisplayMemberPath="ActCode"></ComboBox>
+                <StackPanel Grid.Row="2" Grid.Column="0">
+                    <TextBlock Text="Notes to Show" 
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+                    <ListBox x:Name="NotesToShow"                      
+	                    HorizontalAlignment="Center" 
+	                    VerticalAlignment="Center"
+	                    Height="145" 
+	                    Width="175"
+                        ItemsSource="{Binding UserNoteSettings}"
+                        DisplayMemberPath="ActCode">
+                        <ListBox.InputBindings>
+                            <KeyBinding 
+                                Key="Enter" 
+                                Command="{Binding RemoveToDoUserNoteSettingCommand}"
+                                CommandParameter="{Binding ElementName=NotesToShow, Path=SelectedItem}">
+                            </KeyBinding>
+                            <!--<MouseBinding  
+                                Gesture="LeftDoubleClick" 
+                                Command="{Binding RemoveToDoUserNoteSettingCommand}"
+                                CommandParameter="{Binding ElementName=NotesToShow, Path=SelectedItem}"/>-->
+                        </ListBox.InputBindings>
+                    </ListBox>
+                </StackPanel>
+                <Button x:Name="AddNoteButton"
+                    Content="Add" Grid.Row="2" Grid.Column="1" 
+		            IsEnabled="{Binding SelectedNote, Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		            HorizontalAlignment="Left" 
+		            Height="25" 
+		            Width="64"
+		            Margin="0,0,0,50"
+		            Command="{Binding AddToDoUserNoteSettingCommand}"
+		            CommandParameter="{Binding ElementName=AvailableNotes, Path=SelectedItem}"/>
+                <Button x:Name="RemoveNoteButton"
+                    Content="Remove" Grid.Row="2" Grid.Column="1"
+		            IsEnabled="{Binding ElementName=NotesToShow, Path=SelectedItem, 
+					            Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		            HorizontalAlignment="Left" 
+		            Height="25" 
+		            Width="64"
+		            Margin="0,50,0,0"
+		            Command="{Binding RemoveToDoUserNoteSettingCommand}"
+		            CommandParameter="{Binding ElementName=NotesToShow, Path=SelectedValue}"/>
+                <StackPanel Grid.Row="2" Grid.Column="2">
+                    <TextBlock 
+		                Text="Available Notes"
+		                FontSize="14"
+		                FontWeight="SemiBold"
+		                HorizontalAlignment="Left"
+		                VerticalAlignment="Center"
+		                Margin="27,0,0,0"/>
+                    <ListBox x:Name="AvailableNotes"
+		                HorizontalAlignment="Left" 
+		                VerticalAlignment="Center"
+		                Height="145" 
+		                Width="175"
+		                Margin="2,0,0,0"
+                        ItemsSource="{Binding CustomUserNotes}"
+                        SelectedItem="{Binding SelectedNote}"
+                        DisplayMemberPath="ActCode">
+                        <ListBox.InputBindings>
+                            <KeyBinding 
+                                Key="Enter" 
+                                Command="{Binding AddToDoUserNoteSettingCommand}"
+                                CommandParameter="{Binding ElementName=AvailableNotes, Path=SelectedItem}">
+                            </KeyBinding>
+                            <!--<MouseBinding  
+                            Gesture="LeftDoubleClick" 
+                            Command="{Binding AddToDoUserNoteSettingCommand}"
+                            CommandParameter="{Binding ElementName=AvailableNotes, Path=SelectedItem}"/>-->
+                        </ListBox.InputBindings>
+                    </ListBox>
+                </StackPanel>
+                <Expander x:Name="ConfigureAvailableNotes"
+                    Width="Auto"
+                    Height="Auto"
+                    Header="Configure Avaliable Notes"
+                    Grid.Column="0"
+                    Grid.Row="3"
+                    Grid.ColumnSpan="3">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="Available Notes" 
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                            <ListBox x:Name="CustomNotes"                      
+	                            HorizontalAlignment="Center" 
+	                            VerticalAlignment="Center"
+	                            Height="145" 
+	                            Width="175"
+                                ItemsSource="{Binding CustomUserNotes}"
+                                DisplayMemberPath="ActCode">
+                                <ListBox.InputBindings>
+                                    <KeyBinding 
+                                        Key="Enter" 
+                                        Command="{Binding RemoveCustomUserNoteCommand}"
+                                        CommandParameter="{Binding ElementName=CustomNotes, Path=SelectedItem}">  
+                                    </KeyBinding>
+                                    <!--<MouseBinding  
+                                Gesture="LeftDoubleClick" 
+                                Command="{Binding RemoveToDoUserNoteSettingCommand}"
+                                CommandParameter="{Binding ElementName=NotesToShow, Path=SelectedItem}"/>-->
+                                </ListBox.InputBindings>
+                            </ListBox>
+                        </StackPanel>
+                        <Button x:Name="SelectNoteButton"
+                            Content="Add" Grid.Row="0" Grid.Column="1" 
+		                    IsEnabled="{Binding SelectedNote, Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		                    HorizontalAlignment="Left" 
+		                    Height="25" 
+		                    Width="64"
+		                    Margin="0,0,0,50"
+		                    Command="{Binding AddCustomUserNoteCommand}"
+		                    CommandParameter="{Binding ElementName=AllNotes, Path=SelectedItem}"/>
+                        <Button x:Name="UnselectNoteButton"
+                            Content="Remove" Grid.Row="0" Grid.Column="1"
+		                    IsEnabled="{Binding ElementName=CustomNotes, Path=SelectedItem, 
+					                    Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		                    HorizontalAlignment="Left" 
+		                    Height="25" 
+		                    Width="64"
+		                    Margin="0,50,0,0"
+		                    Command="{Binding RemoveCustomUserNoteCommand}"
+		                    CommandParameter="{Binding ElementName=CustomNotes, Path=SelectedValue}"/>
+                        <StackPanel Grid.Row="0" Grid.Column="2">
+                            <TextBlock 
+		                        Text="All Perfect Practice Notes"
+		                        FontSize="14"
+		                        FontWeight="SemiBold"
+		                        HorizontalAlignment="Center"
+		                        VerticalAlignment="Center"/>
+                            <ListBox x:Name="AllNotes"
+		                        HorizontalAlignment="Left" 
+		                        VerticalAlignment="Center"
+		                        Height="145" 
+		                        Width="175"
+		                        Margin="2,0,0,0"
+                                ItemsSource="{Binding NotesMetaData}"
+                                SelectedItem="{Binding SelectedNote}"
+                                DisplayMemberPath="ActCode">
+                                <ListBox.InputBindings>
+                                    <KeyBinding 
+                                        Key="Enter" 
+                                        Command="{Binding AddCustomUserNoteCommand}"
+                                        CommandParameter="{Binding ElementName=AllNotes, Path=SelectedItem}">
+                                    </KeyBinding>
+                                    <!--<MouseBinding  
+                            Gesture="LeftDoubleClick" 
+                            Command="{Binding AddToDoUserNoteSettingCommand}"
+                            CommandParameter="{Binding ElementName=AvailableNotes, Path=SelectedItem}"/>-->
+                                </ListBox.InputBindings>
+                            </ListBox>
+                        </StackPanel>
+                    </Grid>                    
+                </Expander>
+            </Grid>
+        </TabItem>
+        <TabItem>
+            <TabItem.Header>
+                <Label Content="Note Automations"/>
+            </TabItem.Header>
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Label Content="Automations are Performed when the Configured ToDo is Completed"
+                       Grid.Column="0"
+                       Grid.ColumnSpan="3"
+                       Grid.Row="0"
+                       Width="Auto"
+                       Height="Auto"/>
+
+                    <StackPanel Orientation="Horizontal"
+                        Grid.ColumnSpan="2"
+                        Grid.Column="0"
+                        Grid.Row="1">
+                        <Label Content="For ToDo: "                        
+                            HorizontalAlignment="Left"
+                            Width="65"/>
+                        <ComboBox                             
+                            Width="150"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding DistinctToDos}"
+                            SelectedItem="{Binding SelectedToDo}"
+                            DisplayMemberPath="ActCode" />
+                    </StackPanel>
+                    
+                    <Expander Header="Configure Automated Note Text"
+                              Grid.Column="0" Grid.Row="3"
+                              IsExpanded="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel
+                                Grid.Column="0" Grid.Row="0" >
+                                <Label Content="Existing Note Text Segments: "/>
+                                <ListBox x:Name="ExistingSegments"
+                                    ItemsSource="{Binding TranTextSegments}"
+                                    ItemTemplateSelector="{StaticResource templateSelector}"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Grid.Column="0" Grid.Row="1">
+                                <Label Content="Select To Add New Segment: "/>
+                                <ComboBox x:Name="SegmentDataTemplates"
+                                    Height="25" Width="150"
+                                    HorizontalAlignment="Left"
+                                    ItemsSource="{Binding SegmentTypes}"
+                                    SelectedValue="{Binding NewSegment}"
+                                    DisplayMemberPath="Key"
+                                    SelectedValuePath="Value"/>
+                            </StackPanel>
+
+                            <!--<ContentControl
+                                 Grid.Column="0" Grid.Row="2"                                
+                                Content="{Binding NewSegment}"
+                                ContentTemplate="{StaticResource ConstantTranTextTemplate}" >
+                            </ContentControl>-->
+                            <ItemsControl x:Name="NewSegments"
+                                          Grid.Column="0" Grid.Row="2"
+                                          Height="Auto" Width="Auto"
+                                          ItemsSource="{Binding NewSegments}"
+                                          ItemTemplateSelector="{StaticResource templateSelector}">   
+                            </ItemsControl>
+                        </Grid>
+                    </Expander>
+                    
+                    <Expander Header="Add Note Automation"
+                              Grid.Column="0"
+                              Grid.Row="4"
+                              IsExpanded="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel
+                                Grid.Column="0"
+                                Grid.Row="2">
+                                <Label 
+                                    Content="Notes to Add to File"
+                                    HorizontalAlignment="Center"/>
+                                <ListBox x:Name="NoteAutomations"
+                                    Width="145"
+                                    Height="150"
+                                    ItemsSource="{Binding NoteAutomations}"
+                                    SelectedItem="{Binding SelectedNoteAutomation}"
+                                    DisplayMemberPath="NoteToInsert">
+                                </ListBox>
+                            </StackPanel>
+                            <Button
+                                Content="Add" Grid.Row="2" Grid.Column="1" 
+		                        IsEnabled="{Binding SelectedNote, Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		                        HorizontalAlignment="Left" 
+		                        Height="25" 
+		                        Width="64"
+		                        Margin="0,0,0,50"
+		                        Command="{Binding AddNoteAutomationCommand}"
+		                        CommandParameter="{Binding ElementName=AvailableNotesForAutomation, Path=SelectedItem}"/>
+                            <Button
+                                Content="Remove" Grid.Row="2" Grid.Column="1"
+		                        IsEnabled="{Binding ElementName=NoteAutomations, Path=SelectedItem, 
+					                Converter={StaticResource SelectedItemsToEnabledConverter}}"
+		                        HorizontalAlignment="Left" 
+		                        Height="25" 
+		                        Width="64"
+		                        Margin="0,50,0,0"
+		                        Command="{Binding RemoveNoteAutomationCommand}"
+		                        CommandParameter="{Binding ElementName=NoteAutomations, Path=SelectedValue}"/>
+                            <StackPanel
+                                Grid.Column="2" Grid.Row="2">
+                                <Label  Content="Available Notes"
+                                        HorizontalAlignment="Center"/>
+                                <ListBox x:Name="AvailableNotesForAutomation"
+                                         Width="145"
+                                         Height="150"
+                                         ItemsSource="{Binding CustomUserNotes}"
+                                         SelectedItem="{Binding SelectedNote}"
+                                         DisplayMemberPath="ActCode">
+                                </ListBox>
+                            </StackPanel>                      
+                        </Grid>
+                    </Expander>
+
+                </Grid>                
+            </StackPanel>
+        </TabItem>
+    </TabControl>
+</Window>
